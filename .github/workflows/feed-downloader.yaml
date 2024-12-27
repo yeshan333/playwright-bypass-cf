@@ -1,0 +1,40 @@
+name: download feed which is protected by Cloudflare
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 21
+      - name: Install dependencies
+        run: npm install
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright downloader
+        run: node index.js
+      - name: Push downloaded rss file
+        run: |
+          pwd
+          ls -al
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"github-actions[bot]
+          if [[ -n $(git status -s) ]]; then
+            git add .
+            git commit -m "update feed files by ci"
+            git push https://github-actions[bot]:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          else
+            echo "never updated."
+          fi
