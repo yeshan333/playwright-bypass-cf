@@ -20,9 +20,16 @@ jobs:
         with:
           node-version: 21
       - name: Install dependencies
-        run: npm install
+        run: npm install --registry=https://registry.npmmirror.com
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        run: |
+          # === NPM BINARY CHINA ===
+          # https://github.com/cnpm/binary-mirror-config/blob/master/package.json#L53
+          export NODEJS_ORG_MIRROR="https://cdn.npmmirror.com/binaries/node"
+          export NVM_NODEJS_ORG_MIRROR="https://cdn.npmmirror.com/binaries/node"
+          export PHANTOMJS_CDNURL="https://cdn.npmmirror.com/binaries/phantomjs"
+          export CHROMEDRIVER_CDNURL="https://cdn.npmmirror.com/binaries/chromedriver"
+          npx playwright install --with-deps
       - name: Run Playwright downloader
         run: node index.js
       - name: Push downloaded rss file
